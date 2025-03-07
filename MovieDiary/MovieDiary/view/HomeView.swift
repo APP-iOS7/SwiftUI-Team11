@@ -15,16 +15,57 @@ struct Movie: Identifiable, Decodable {
     let title: String
     let posterPath: String
     let voteAverage: Double
+    let releaseDate: String?
     
     enum CodingKeys: String, CodingKey {
         case id
         case title
         case posterPath = "poster_path"
         case voteAverage = "vote_average"
+        case releaseDate = "release_date"
     }
     
     var posterURL: URL? {
         URL(string: "https://image.tmdb.org/t/p/w200\(posterPath)")
+    }
+    
+    var isUpcoming: Bool {
+        guard let releaseDateString = releaseDate, !releaseDateString.isEmpty else {
+            return false
+        }
+        
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        
+        guard let releaseDate = formatter.date(from: releaseDateString) else {
+            return false
+        }
+        
+        return releaseDate > Date()
+    }
+    
+    var daysUntilRelease: String? {
+        guard let releaseDateString = releaseDate, !releaseDateString.isEmpty else {
+            return nil
+        }
+        
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        
+        guard let releaseDate = formatter.date(from: releaseDateString) else {
+            return nil
+        }
+        
+        // 오늘 날짜와의 차이 계산
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let releaseDay = calendar.startOfDay(for: releaseDate)
+        
+        if let days = calendar.dateComponents([.day], from: today, to: releaseDay).day, days >= 0 {
+            return "D-\(days)"
+        }
+        
+        return nil
     }
 }
 
@@ -82,7 +123,7 @@ class HomeViewModel: ObservableObject {
     // 영화 데이터 로드
     func loadData() {
         isRefreshing = true
-
+        
         let publishers = categories.indices.map { index in
             return fetchCategoryMovies(at: index)
         }
@@ -251,6 +292,18 @@ struct MoviePosterView: View {
                 }
             }
             
+            if let daysUntilRelease = movie.daysUntilRelease {
+                Text(daysUntilRelease)
+                    .font(.caption2)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 3)
+                    .background(Color.red)
+                    .cornerRadius(4)
+                    .padding(6)
+            }
+            
             // 제목
             Text(movie.title)
                 .font(.caption)
@@ -258,19 +311,19 @@ struct MoviePosterView: View {
                 .foregroundColor(.black)
                 .lineLimit(1)
             
-            // 평점
+            // 평점 or 출시 예정
             if movie.voteAverage > 0 {
                 HStack(spacing: 2) {
                     Image(systemName: "star.fill")
                         .foregroundColor(.yellow)
                         .font(.caption2)
+                    
                     Text(String(format: "%.1f", movie.voteAverage))
                         .font(.caption2)
                         .fontWeight(.semibold)
                         .foregroundColor(.black)
                 }
             } else {
-                // 평점이 없는 경우
                 Text("출시 예정")
                     .font(.caption2)
                     .foregroundColor(.gray)
