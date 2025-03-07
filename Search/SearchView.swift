@@ -19,7 +19,7 @@ struct SearchView: View {
                             MovieCell()
                             Divider()
                         }
-                        .padding(.vertical, 6)
+                        .padding(5)
                     }
                 }
             }

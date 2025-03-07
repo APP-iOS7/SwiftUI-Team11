@@ -9,10 +9,10 @@ import SwiftUI
 
 struct MovieCell: View {
     var body: some View {
-        HStack {
+        HStack(spacing: 10) {
             MoviePosterView()
             
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 10) {
                 Text("Movie Title")
                     .fontWeight(.bold)
                 
@@ -21,7 +21,7 @@ struct MovieCell: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal)
+        .padding(15)
         
     }
 }
