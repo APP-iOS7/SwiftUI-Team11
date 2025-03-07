@@ -16,7 +16,7 @@ struct SearchView: View {
                 LazyVStack() {
                     ForEach(0 ... 10, id: \.self) { user in
                         VStack {
-//                            UserCell()
+                            MovieCell()
                             Divider()
                         }
                         .padding(.vertical, 6)
