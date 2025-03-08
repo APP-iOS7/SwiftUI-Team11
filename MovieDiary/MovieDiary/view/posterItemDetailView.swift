@@ -1,9 +1,8 @@
-//
-//  posterItemDetailView.swift
-//  MovieDiary
-//
-//  Created by 고요한 on 3/7/25.
-//
+/*
+ Version : 1_0_1
+ Date    : 2025-03-08(SAT)
+ Log     : Poster Detail View Draft and Hero Section didn't show image bugfix
+ */
 
 import SwiftUI
 import UIKit
