@@ -37,7 +37,7 @@ struct HomeView: View {
                                         ForEach(category.movies) { movie in
                                             // 영화 클릭 시 상세 페이지로
                                             NavigationLink(destination: posterItemDetailView(movieId: movie.id)) {
-                                                MoviePosterView(movie: movie)
+//                                                MoviePosterView(movie: movie)
                                             }
                                         }
                                     }

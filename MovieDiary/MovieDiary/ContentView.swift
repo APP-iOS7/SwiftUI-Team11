@@ -13,7 +13,8 @@ struct ContentView: View {
     @Query private var items: [Item]
 
     var body: some View {
-        posterItemDetailView(movieId: 2222)
+        
+        TabBarView()
     }
 
 }
