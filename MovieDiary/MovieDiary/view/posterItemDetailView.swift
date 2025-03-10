@@ -57,7 +57,9 @@ struct posterItemDetailView: View {
             .clipShape(RoundedRectangle(cornerRadius: 10))
             .foregroundStyle(.black)
             Button(
-                action: {},
+                action: {
+//                    createCommentView()
+                },
                 label: {
                     Text("코멘트")
                         .font(.system(size: 18, weight: .bold))
