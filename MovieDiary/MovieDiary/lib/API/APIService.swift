@@ -64,11 +64,11 @@ enum APIError: Error {
 }
 
 protocol MovieAPIServiceProtocol {
-    func getMovies(endpoint: MovieEndpoint, page: Int) -> AnyPublisher<MovieResponse, APIError>
-    func searchMovies(query: String, page: Int) -> AnyPublisher<MovieResponse, APIError>
+    func getMovies(endpoint: MovieEndpoint, page: Int) -> AnyPublisher<ItemMovieResponse, APIError>
+    func searchMovies(query: String, page: Int) -> AnyPublisher<ItemMovieResponse, APIError>
     func getMovieDetail(id: Int) -> AnyPublisher<MovieDetailResponse, APIError>
     func updateMovie(id: Int, rate: Double?, isBookmarked: Bool?, comment: String?) -> AnyPublisher<Void, APIError>
-    func getMoviesByGenre(genreId: String, page: Int) -> AnyPublisher<MovieResponse, APIError>
+    func getMoviesByGenre(genreId: String, page: Int) -> AnyPublisher<ItemMovieResponse, APIError>
 }
 
 enum MovieEndpoint {
@@ -80,19 +80,18 @@ enum MovieEndpoint {
     var path: String {
         switch self {
         case .popular:
-            return "select?model=item_movie&amp;page=1"
+            return "select?model=item_movie&page=1"
         case .nowPlaying:
-            return "select?model=item_movie&amp;page=1"
+            return "select?model=item_movie&page=1"
         case .topRated:
-            return "select?model=item_movie&amp;page=1"
+            return "select?model=item_movie&page=1"
         case .upcoming:
-            return "select?model=item_movie&amp;page=1"
+            return "select?model=item_movie&page=1"
         }
     }
 }
 
 class MovieDiaryAPIService: MovieAPIServiceProtocol {
-    
     private let baseURL: String
     private let urlSession: URLSession
     private let jsonDecoder: JSONDecoder
@@ -106,10 +105,32 @@ class MovieDiaryAPIService: MovieAPIServiceProtocol {
         configuration.waitsForConnectivity = true
         
         self.urlSession = URLSession(configuration: configuration)
+        
+        // Configure JSONDecoder for Date parsing
+        jsonDecoder.dateDecodingStrategy = .custom { decoder in
+            let container = try decoder.singleValueContainer()
+            let dateString = try container.decode(String.self)
+            
+            let formatter = DateFormatter()
+            formatter.locale = Locale(identifier: "ko_KR")
+            formatter.timeZone = TimeZone(identifier: "UTC")
+            
+            let formats = ["yyyy-MM-dd", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd'T'HH:mm:ssZ"]
+            
+            for format in formats {
+                formatter.dateFormat = format
+                if let date = formatter.date(from: dateString) {
+                    return date
+                }
+            }
+            
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "날짜 형식이 맞지 않습니다: \(dateString)")
+        }
+        
         self.jsonDecoder = jsonDecoder
     }
     
-    func getMovies(endpoint: MovieEndpoint, page: Int = 1) -> AnyPublisher<MovieResponse, APIError> {
+    func getMovies(endpoint: MovieEndpoint, page: Int = 1) -> AnyPublisher<ItemMovieResponse, APIError> {
         let urlString = "\(baseURL)/\(endpoint.path)"
         
         guard let url = URL(string: urlString) else {
@@ -118,7 +139,7 @@ class MovieDiaryAPIService: MovieAPIServiceProtocol {
         
         return urlSession.dataTaskPublisher(for: url)
             .mapError { APIError.networkError($0) }
-            .flatMap { data, response -> AnyPublisher<MovieResponse, APIError> in
+            .flatMap { data, response -> AnyPublisher<ItemMovieResponse, APIError> in
                 guard let httpResponse = response as? HTTPURLResponse else {
                     return Fail(error: APIError.invalidResponse).eraseToAnyPublisher()
                 }
@@ -128,19 +149,22 @@ class MovieDiaryAPIService: MovieAPIServiceProtocol {
                 }
                 
                 return Just(data)
-                    .decode(type: MovieResponse.self, decoder: self.jsonDecoder)
-                    .mapError { _ in APIError.decodingError }
+                    .decode(type: ItemMovieResponse.self, decoder: self.jsonDecoder)
+                    .mapError { error in
+                        print("Decoding error: \(error)")
+                        return APIError.decodingError
+                    }
                     .eraseToAnyPublisher()
             }
             .eraseToAnyPublisher()
     }
     
-    func searchMovies(query: String, page: Int = 1) -> AnyPublisher<MovieResponse, APIError> {
+    func searchMovies(query: String, page: Int = 1) -> AnyPublisher<ItemMovieResponse, APIError> {
         guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
             return Fail(error: APIError.invalidURL).eraseToAnyPublisher()
         }
         
-        let urlString = "\(baseURL)/search?query=\(encodedQuery)&amp;page=\(page)"
+        let urlString = "\(baseURL)/search?query=\(encodedQuery)&page=\(page)"
         
         guard let url = URL(string: urlString) else {
             return Fail(error: APIError.invalidURL).eraseToAnyPublisher()
@@ -148,7 +172,7 @@ class MovieDiaryAPIService: MovieAPIServiceProtocol {
         
         return urlSession.dataTaskPublisher(for: url)
             .mapError { APIError.networkError($0) }
-            .flatMap { data, response -> AnyPublisher<MovieResponse, APIError> in
+            .flatMap { data, response -> AnyPublisher<ItemMovieResponse, APIError> in
                 guard let httpResponse = response as? HTTPURLResponse else {
                     return Fail(error: APIError.invalidResponse).eraseToAnyPublisher()
                 }
@@ -158,8 +182,11 @@ class MovieDiaryAPIService: MovieAPIServiceProtocol {
                 }
                 
                 return Just(data)
-                    .decode(type: MovieResponse.self, decoder: self.jsonDecoder)
-                    .mapError { _ in APIError.decodingError }
+                    .decode(type: ItemMovieResponse.self, decoder: self.jsonDecoder)
+                    .mapError { error in
+                        print("Decoding error: \(error)")
+                        return APIError.decodingError
+                    }
                     .eraseToAnyPublisher()
             }
             .eraseToAnyPublisher()
@@ -185,7 +212,10 @@ class MovieDiaryAPIService: MovieAPIServiceProtocol {
                 
                 return Just(data)
                     .decode(type: MovieDetailResponse.self, decoder: self.jsonDecoder)
-                    .mapError { _ in APIError.decodingError }
+                    .mapError { error in
+                        print("Decoding error: \(error)")
+                        return APIError.decodingError
+                    }
                     .eraseToAnyPublisher()
             }
             .eraseToAnyPublisher()
@@ -229,8 +259,11 @@ class MovieDiaryAPIService: MovieAPIServiceProtocol {
             .eraseToAnyPublisher()
     }
     
-    func getMoviesByGenre(genreId: String, page: Int = 1) -> AnyPublisher<MovieResponse, APIError> {
-        let urlString = "\(baseURL)/select?model=item_movie&amp;page=\(page)&amp;genre_ids=[\"\(genreId)\"]"
+    func getMoviesByGenre(genreId: String, page: Int = 1) -> AnyPublisher<ItemMovieResponse, APIError> {
+        // 페이지 번호 유효성 검사
+        let validPage = max(1, page)
+        
+        let urlString = "\(baseURL)/select?model=item_movie&page=\(validPage)&genre_ids=\(genreId)"
         
         guard let url = URL(string: urlString) else {
             return Fail(error: APIError.invalidURL).eraseToAnyPublisher()
@@ -238,22 +271,72 @@ class MovieDiaryAPIService: MovieAPIServiceProtocol {
         
         return urlSession.dataTaskPublisher(for: url)
             .mapError { APIError.networkError($0) }
-            .flatMap { data, response -> AnyPublisher<MovieResponse, APIError> in
+            .flatMap { data, response -> AnyPublisher<ItemMovieResponse, APIError> in
                 guard let httpResponse = response as? HTTPURLResponse else {
                     return Fail(error: APIError.invalidResponse).eraseToAnyPublisher()
                 }
                 
+                // 400 에러 처리
                 guard (200...299).contains(httpResponse.statusCode) else {
+                    // 에러 메시지 로깅
+                    if let errorMessage = String(data: data, encoding: .utf8) {
+                        print("Server Error: \(errorMessage)")
+                    }
                     return Fail(error: APIError.serverError(httpResponse.statusCode)).eraseToAnyPublisher()
                 }
                 
                 return Just(data)
-                    .decode(type: MovieResponse.self, decoder: self.jsonDecoder)
-                    .mapError { _ in APIError.decodingError }
+                    .decode(type: ItemMovieResponse.self, decoder: self.jsonDecoder)
+                    .mapError { error in
+                        print("Decoding error details: \(error)")
+                        return APIError.decodingError
+                    }
                     .eraseToAnyPublisher()
             }
             .eraseToAnyPublisher()
     }
     
     static let shared = MovieDiaryAPIService()
+}
+
+struct ItemMovieResponse: Codable {
+    let page: Int
+    let results: [ItemMovie]
+    let totalPages: Int
+    let totalResults: Int
+    
+    enum CodingKeys: String, CodingKey {
+        case page, results
+        case totalPages = "total_pages"
+        case totalResults = "total_results"
+    }
+    
+    init(from decoder: Decoder) throws {
+        // 단일 값 컨테이너 시도
+        let container = try decoder.singleValueContainer()
+        
+        // 빈 배열일 경우 처리
+        if let array = try? container.decode([ItemMovie].self) {
+            self.results = array
+            self.page = 1
+            self.totalPages = 1
+            self.totalResults = array.count
+        } else {
+            // 키드 컨테이너로 시도
+            let keyedContainer = try decoder.container(keyedBy: CodingKeys.self)
+            
+            self.results = (try? keyedContainer.decode([ItemMovie].self, forKey: .results)) ?? []
+            self.page = (try? keyedContainer.decode(Int.self, forKey: .page)) ?? 1
+            self.totalPages = (try? keyedContainer.decode(Int.self, forKey: .totalPages)) ?? 1
+            self.totalResults = (try? keyedContainer.decode(Int.self, forKey: .totalResults)) ?? 0
+        }
+    }
+    
+    // 빈 배열 초기화 메서드
+    init() {
+        page = 1
+        results = []
+        totalPages = 1
+        totalResults = 0
+    }
 }

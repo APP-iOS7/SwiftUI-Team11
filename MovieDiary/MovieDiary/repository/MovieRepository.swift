@@ -8,22 +8,9 @@
 import Foundation
 import Combine
 
-//struct MovieResponse: Codable {
-//    let page: Int
-//    let results: [Movie]
-//    let totalPages: Int
-//    let totalResults: Int
-//    
-//    enum CodingKeys: String, CodingKey {
-//        case page, results
-//        case totalPages = "total_pages"
-//        case totalResults = "total_results"
-//    }
-//}
-
 protocol MovieRepositoryProtocol {
-    func getMoviesByGenre(genreId: String) -> AnyPublisher<[Movie], Error>
-    func searchMovies(query: String, page: Int) -> AnyPublisher<[Movie], Error>
+    func getMoviesByGenre(genreId: String) -> AnyPublisher<[ItemMovie], Error>
+    func searchMovies(query: String, page: Int) -> AnyPublisher<[ItemMovie], Error>
     func updateMovie(id: Int, rate: Double?, isBookmarked: Bool?, comment: String?) -> AnyPublisher<Void, Error>
 }
 
@@ -34,7 +21,7 @@ class MovieRepository: MovieRepositoryProtocol {
         self.apiService = apiService
     }
     
-    func getMoviesByGenre(genreId: String) -> AnyPublisher<[Movie], Error> {
+    func getMoviesByGenre(genreId: String) -> AnyPublisher<[ItemMovie], Error> {
         return apiService.getMoviesByGenre(genreId: genreId, page: 1)
             .map { response in
                 return response.results
@@ -43,7 +30,7 @@ class MovieRepository: MovieRepositoryProtocol {
             .eraseToAnyPublisher()
     }
     
-    func searchMovies(query: String, page: Int = 1) -> AnyPublisher<[Movie], Error> {
+    func searchMovies(query: String, page: Int = 1) -> AnyPublisher<[ItemMovie], Error> {
         return apiService.searchMovies(query: query, page: page)
             .map { response in
                 return response.results

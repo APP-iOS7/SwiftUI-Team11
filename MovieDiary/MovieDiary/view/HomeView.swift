@@ -37,7 +37,7 @@ struct HomeView: View {
                                         ForEach(category.movies) { movie in
                                             // 영화 클릭 시 상세 페이지로
                                             NavigationLink(destination: posterItemDetailView(movieId: movie.id)) {
-//                                                MoviePosterView(movie: movie)
+                                                MoviePosterView(movie: movie)
                                             }
                                         }
                                     }
@@ -90,12 +90,12 @@ struct HomeView: View {
 }
 
 struct MoviePosterView: View {
-    let movie: Movie
+    let movie: ItemMovie
     
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
             ZStack(alignment: .topLeading) {
-                AsyncImage(url: URL(string: movie.posterPath)) { phase in
+                AsyncImage(url: URL(string: "https://image.tmdb.org/t/p/w500\(movie.posterPath)")) { phase in
                     switch phase {
                     case .empty:
                         ZStack {
@@ -131,9 +131,10 @@ struct MoviePosterView: View {
                     }
                 }
                 
-                // D-Day 뱃지
-                if let daysUntilRelease = movie.releaseDate  {
-                    Text(daysUntilRelease)
+                // D-Day 뱃지 (릴리즈 날짜 계산 필요)
+                let daysUntil = calculateDaysUntilRelease(movie.releaseDate)
+                if let daysText = daysUntil {
+                    Text(daysText)
                         .font(.caption2)
                         .fontWeight(.bold)
                         .foregroundColor(.white)
@@ -152,25 +153,35 @@ struct MoviePosterView: View {
                 .foregroundColor(.black)
                 .lineLimit(1)
             
-            // 평점 or 출시 예정
-            if movie.voteAverage > 0 {
-                HStack(spacing: 2) {
-                    Image(systemName: "star.fill")
-                        .foregroundColor(.yellow)
-                        .font(.caption2)
-                    
-                    Text(String(format: "%.1f", movie.voteAverage))
-                        .font(.caption2)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.black)
-                }
-            } else {
-                Text("출시 예정")
+            // 평점
+            HStack(spacing: 2) {
+                Image(systemName: "star.fill")
+                    .foregroundColor(.yellow)
                     .font(.caption2)
-                    .foregroundColor(.gray)
+                
+                Text(String(format: "%.1f", movie.rate))
+                    .font(.caption2)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.black)
             }
         }
         .frame(width: 120)
+    }
+    
+    // 개봉일까지 남은 날짜 계산
+    func calculateDaysUntilRelease(_ releaseDate: Date) -> String? {
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.day], from: Date(), to: releaseDate)
+        
+        guard let days = components.day else { return nil }
+        
+        if days < 0 {
+            return nil
+        } else if days == 0 {
+            return "오늘 개봉"
+        } else {
+            return "D-\(days)"
+        }
     }
 }
 
