@@ -205,7 +205,7 @@ struct HomeView: View {
                                     HStack(spacing: 15) {
                                         ForEach(category.movies) { movie in
                                             // 영화 클릭 시 상세 페이지로
-                                            NavigationLink(destination: MovieDetailView(movieId: movie.id, title: movie.title)) {
+                                            NavigationLink(destination: posterItemDetailView(movieId: movie.id)) {
                                                 MoviePosterView(movie: movie)
                                             }
                                         }
