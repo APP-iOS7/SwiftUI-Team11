@@ -1,32 +1,21 @@
-//
-//  createCommentView.swift
-//  MovieDiary
-//
-//  Created by 심연아 on 3/10/25.
-//
-
 import SwiftUI
 
-struct createCommentView: View {
-    var moiveId: Int
-    @Binding var comment: String
-    @State var commentText: String = ""
-    @State var isChanged: Bool = false
+struct CreateCommentView: View {
+    @State private var caption = ""
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
         NavigationStack {
             VStack {
                 HStack {
-                    TextField("작품에 대한 생각을 자유롭게 적어주세요.", text: $commentText, axis: .vertical)
-
+                    TextField("작품에 대한 생각을 자유롭게 적어주세요.", text: $caption, axis: .vertical)
                         .font(.system(size: 16))
                         .padding()
                     
                     Spacer()
-                    if !commentText.isEmpty {
+                    if !caption.isEmpty {
                         Button {
-                            commentText = ""
+                            caption = ""
                         } label: {
                             Image(systemName: "xmark")
                                 .resizable()
@@ -35,17 +24,6 @@ struct createCommentView: View {
                         }
                         .padding()
                     }
-                }
-                .onAppear() {
-                    commentText = comment
-                    print(isChanged)
-                }
-                .onChange(of: commentText) { _, newValue in
-                    print(commentText)
-                    print(comment)
-                    if commentText != comment {
-                        isChanged = true
-                    } else { isChanged = false}
                 }
                 Spacer()
             }
@@ -65,14 +43,10 @@ struct createCommentView: View {
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("작성") {
-                        Task {
-                            comment = commentText
-                            await updateRequest(model: "item_movie", id: moiveId, comment: comment)
-                        }
-                        dismiss()
+                        
                     }
-                    .opacity(!isChanged ? 0.5 : 1.0)
-                    .disabled(!isChanged)
+                    .opacity(caption.isEmpty ? 0.5 : 1.0)
+                    .disabled(caption.isEmpty)
                     .font(.system(size: 18))
                     .fontWeight(.semibold)
                     .foregroundColor(.black)
@@ -84,6 +58,5 @@ struct createCommentView: View {
 }
 
 #Preview {
-    @Previewable @State var comment : String = "dsddadhshh"
-    createCommentView(moiveId: 11, comment: $comment)
+    CreateCommentView()
 }

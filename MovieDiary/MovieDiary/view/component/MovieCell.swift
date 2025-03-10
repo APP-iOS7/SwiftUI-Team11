@@ -8,9 +8,10 @@
 import SwiftUI
 
 struct MovieCell: View {
+    @State var testBinding : String = ""
     var body: some View {
         HStack(spacing: 10) {
-            MoviePosterImageView()
+            MoviePosterImageView(testBinding:$testBinding)
             
             VStack(alignment: .leading, spacing: 10) {
                 Text("Movie Title")
@@ -26,6 +27,3 @@ struct MovieCell: View {
     }
 }
 
-#Preview {
-    MovieCell()
-}

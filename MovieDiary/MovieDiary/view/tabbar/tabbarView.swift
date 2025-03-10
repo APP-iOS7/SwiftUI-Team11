@@ -45,12 +45,12 @@ struct TabBarView: View {
 //            showCreateThreadView = newValue == 2
 //        }
 
-        .sheet(isPresented: $showCreateThreadView, onDismiss: {
-            selectedTab = 0
-        }, content: {
-            createCommentView()
-            //여길 이제 CommentView로 바꿔주면 됩니다.
-        })
+//        .sheet(isPresented: $showCreateThreadView, onDismiss: {
+//            selectedTab = 0
+//        }, content: {
+//            createCommentView()
+//            //여길 이제 CommentView로 바꿔주면 됩니다.
+//        })
         .tint(.black)
     }
 }
