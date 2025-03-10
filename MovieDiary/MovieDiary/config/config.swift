@@ -2,7 +2,7 @@ import Foundation
 import SwiftUICore
 
 
-//let URl
+let API_URL = "https://6cff-49-246-51-78.ngrok-free.app"
 
 extension Color {
     init(hex: String) {
