@@ -13,7 +13,7 @@ struct TabBarView: View {
     
     var body: some View {
         TabView(selection: $selectedTab) {
-            ContentView()
+            HomeView()
                 .tabItem {
                     Image(systemName: selectedTab == 0 ? "house.fill" : "house")
                         .environment(\.symbolVariants, selectedTab == 0 ? .fill : .none)
@@ -30,7 +30,7 @@ struct TabBarView: View {
                 .onAppear { selectedTab = 2 }
                 .tag(2)
             
-            ContentView()
+            SearchView()
                 .tabItem {
                     Image(systemName: "magnifyingglass")
                         .environment(\.symbolVariants, selectedTab == 0 ? .fill : .none)

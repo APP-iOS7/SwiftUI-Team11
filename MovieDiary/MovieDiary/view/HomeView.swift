@@ -206,7 +206,7 @@ struct HomeView: View {
                                         ForEach(category.movies) { movie in
                                             // 영화 클릭 시 상세 페이지로
                                             NavigationLink(destination: posterItemDetailView(movieId: movie.id)) {
-                                                MoviePosterView(movie: movie)
+//                                                MoviePosterView(movie: movie)
                                             }
                                         }
                                     }
@@ -251,104 +251,104 @@ struct HomeView: View {
 
 //MARK: - 컴포넌트
 
-struct MoviePosterView: View {
-    let movie: Movie // 표시할 영화 데이터
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 5) {
-            AsyncImage(url: movie.posterURL) { phase in
-                switch phase {
-                case .empty: // 로딩 중
-                    ZStack {
-                        Rectangle()
-                            .fill(Color.gray.opacity(0.3))
-                            .aspectRatio(2/3, contentMode: .fit)
-                            .frame(width: 120)
-                            .cornerRadius(8)
-                        
-                        ProgressView()
-                    }
-                case .success(let image):
-                    image
-                        .resizable()
-                        .aspectRatio(2/3, contentMode: .fit)
-                        .frame(width: 120)
-                        .cornerRadius(8)
-                case .failure:
-                    ZStack {
-                        Rectangle()
-                            .fill(Color.gray.opacity(0.3))
-                            .aspectRatio(2/3, contentMode: .fit)
-                            .frame(width: 120)
-                            .cornerRadius(8)
-                        
-                        // 영화 제목의 첫 글자를 표시
-                        Text(movie.title.prefix(1))
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                    }
-                @unknown default:
-                    EmptyView()
-                }
-            }
-            
-            if let daysUntilRelease = movie.daysUntilRelease {
-                Text(daysUntilRelease)
-                    .font(.caption2)
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 3)
-                    .background(Color.red)
-                    .cornerRadius(4)
-                    .padding(6)
-            }
-            
-            // 제목
-            Text(movie.title)
-                .font(.caption)
-                .fontWeight(.medium)
-                .foregroundColor(.black)
-                .lineLimit(1)
-            
-            // 평점 or 출시 예정
-            if movie.voteAverage > 0 {
-                HStack(spacing: 2) {
-                    Image(systemName: "star.fill")
-                        .foregroundColor(.yellow)
-                        .font(.caption2)
-                    
-                    Text(String(format: "%.1f", movie.voteAverage))
-                        .font(.caption2)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.black)
-                }
-            } else {
-                Text("출시 예정")
-                    .font(.caption2)
-                    .foregroundColor(.gray)
-            }
-        }
-        .frame(width: 120)
-    }
-}
-
-/// **(테스트용)** <영화 상세 정보 페이지> **(테스트용)**
-struct MovieDetailView: View {
-    let movieId: Int
-    let title: String
-    
-    var body: some View {
-        Text(title)
-            .font(.title2)
-            .fontWeight(.bold)
-        Text("(요한님의 디테일 뷰로 이동)")
-            .navigationTitle(title)
-    }
-}
-
-struct HomeView_Previews: PreviewProvider {
-    static var previews: some View {
-        HomeView()
-    }
-}
+//struct MoviePosterView: View {
+//    let movie: Movie // 표시할 영화 데이터
+//    
+//    var body: some View {
+//        VStack(alignment: .leading, spacing: 5) {
+//            AsyncImage(url: URL(string: movie.posterPath)) { phase in
+//                switch phase {
+//                case .empty: // 로딩 중
+//                    ZStack {
+//                        Rectangle()
+//                            .fill(Color.gray.opacity(0.3))
+//                            .aspectRatio(2/3, contentMode: .fit)
+//                            .frame(width: 120)
+//                            .cornerRadius(8)
+//                        
+//                        ProgressView()
+//                    }
+//                case .success(let image):
+//                    image
+//                        .resizable()
+//                        .aspectRatio(2/3, contentMode: .fit)
+//                        .frame(width: 120)
+//                        .cornerRadius(8)
+//                case .failure:
+//                    ZStack {
+//                        Rectangle()
+//                            .fill(Color.gray.opacity(0.3))
+//                            .aspectRatio(2/3, contentMode: .fit)
+//                            .frame(width: 120)
+//                            .cornerRadius(8)
+//                        
+//                        // 영화 제목의 첫 글자를 표시
+//                        Text(movie.title.prefix(1))
+//                            .font(.largeTitle)
+//                            .fontWeight(.bold)
+//                    }
+//                @unknown default:
+//                    EmptyView()
+//                }
+//            }
+//            
+//            if let daysUntilRelease = movie.releaseDate {
+//                Text(daysUntilRelease)
+//                    .font(.caption2)
+//                    .fontWeight(.bold)
+//                    .foregroundColor(.white)
+//                    .padding(.horizontal, 6)
+//                    .padding(.vertical, 3)
+//                    .background(Color.red)
+//                    .cornerRadius(4)
+//                    .padding(6)
+//            }
+//            
+//            // 제목
+//            Text(movie.title)
+//                .font(.caption)
+//                .fontWeight(.medium)
+//                .foregroundColor(.black)
+//                .lineLimit(1)
+//            
+//            // 평점 or 출시 예정
+//            if movie.voteAverage > 0 {
+//                HStack(spacing: 2) {
+//                    Image(systemName: "star.fill")
+//                        .foregroundColor(.yellow)
+//                        .font(.caption2)
+//                    
+//                    Text(String(format: "%.1f", movie.voteAverage))
+//                        .font(.caption2)
+//                        .fontWeight(.semibold)
+//                        .foregroundColor(.black)
+//                }
+//            } else {
+//                Text("출시 예정")
+//                    .font(.caption2)
+//                    .foregroundColor(.gray)
+//            }
+//        }
+//        .frame(width: 120)
+//    }
+//}
+//
+///// **(테스트용)** <영화 상세 정보 페이지> **(테스트용)**
+//struct MovieDetailView: View {
+//    let movieId: Int
+//    let title: String
+//    
+//    var body: some View {
+//        Text(title)
+//            .font(.title2)
+//            .fontWeight(.bold)
+//        Text("(요한님의 디테일 뷰로 이동)")
+//            .navigationTitle(title)
+//    }
+//}
+//
+//struct HomeView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        HomeView()
+//    }
+//}
