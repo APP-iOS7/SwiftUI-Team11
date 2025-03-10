@@ -21,14 +21,15 @@ struct TabBarView: View {
                 }
                 .onAppear { selectedTab = 0 }
                 .tag(0)
-            Text("")
+            
+            DiaryListView()
                 .tabItem {
                     Image(systemName: "plus")
                         .environment(\.symbolVariants, selectedTab == 0 ? .fill : .none)
-                    Text("기록")
+                    Text("영화록")
                 }
-                .onAppear { selectedTab = 2 }
-                .tag(2)
+                .onAppear { selectedTab = 1 }
+                .tag(1)
             
             SearchView()
                 .tabItem {
@@ -36,13 +37,13 @@ struct TabBarView: View {
                         .environment(\.symbolVariants, selectedTab == 0 ? .fill : .none)
                     Text("검색")
                 }
-                .onAppear { selectedTab = 1 }
-                .tag(1)
+                .onAppear { selectedTab = 2 }
+                .tag(2)
 
         }
-        .onChange(of: selectedTab) { oldValue, newValue in
-            showCreateThreadView = newValue == 2
-        }
+//        .onChange(of: selectedTab) { oldValue, newValue in
+//            showCreateThreadView = newValue == 2
+//        }
 
         .sheet(isPresented: $showCreateThreadView, onDismiss: {
             selectedTab = 0
