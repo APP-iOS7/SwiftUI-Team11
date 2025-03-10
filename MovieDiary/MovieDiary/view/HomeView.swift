@@ -10,64 +10,64 @@ import Combine
 
 //MARK: - 데이터 모델
 
-struct Movie: Identifiable, Decodable {
-    let id: Int
-    let title: String
-    let posterPath: String
-    let voteAverage: Double
-    let releaseDate: String?
-    
-    enum CodingKeys: String, CodingKey {
-        case id
-        case title
-        case posterPath = "poster_path"
-        case voteAverage = "vote_average"
-        case releaseDate = "release_date"
-    }
-    
-    var posterURL: URL? {
-        URL(string: "https://image.tmdb.org/t/p/w200\(posterPath)")
-    }
-    
-    var isUpcoming: Bool {
-        guard let releaseDateString = releaseDate, !releaseDateString.isEmpty else {
-            return false
-        }
-        
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        
-        guard let releaseDate = formatter.date(from: releaseDateString) else {
-            return false
-        }
-        
-        return releaseDate > Date()
-    }
-    
-    var daysUntilRelease: String? {
-        guard let releaseDateString = releaseDate, !releaseDateString.isEmpty else {
-            return nil
-        }
-        
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        
-        guard let releaseDate = formatter.date(from: releaseDateString) else {
-            return nil
-        }
-        
-        // 오늘 날짜와의 차이 계산
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-        let releaseDay = calendar.startOfDay(for: releaseDate)
-        
-        if let days = calendar.dateComponents([.day], from: today, to: releaseDay).day, days >= 0 {
-            return "D-\(days)"
-        }
-        
-        return nil
-    }
-}
+//struct Movie: Identifiable, Decodable {
+//    let id: Int
+//    let title: String
+//    let posterPath: String
+//    let voteAverage: Double
+//    let releaseDate: String?
+//    
+//    enum CodingKeys: String, CodingKey {
+//        case id
+//        case title
+//        case posterPath = "poster_path"
+//        case voteAverage = "vote_average"
+//        case releaseDate = "release_date"
+//    }
+//    
+//    var posterURL: URL? {
+//        URL(string: "https://image.tmdb.org/t/p/w200\(posterPath)")
+//    }
+//    
+//    var isUpcoming: Bool {
+//        guard let releaseDateString = releaseDate, !releaseDateString.isEmpty else {
+//            return false
+//        }
+//        
+//        let formatter = DateFormatter()
+//        formatter.dateFormat = "yyyy-MM-dd"
+//        
+//        guard let releaseDate = formatter.date(from: releaseDateString) else {
+//            return false
+//        }
+//        
+//        return releaseDate > Date()
+//    }
+//    
+//    var daysUntilRelease: String? {
+//        guard let releaseDateString = releaseDate, !releaseDateString.isEmpty else {
+//            return nil
+//        }
+//        
+//        let formatter = DateFormatter()
+//        formatter.dateFormat = "yyyy-MM-dd"
+//        
+//        guard let releaseDate = formatter.date(from: releaseDateString) else {
+//            return nil
+//        }
+//        
+//        // 오늘 날짜와의 차이 계산
+//        let calendar = Calendar.current
+//        let today = calendar.startOfDay(for: Date())
+//        let releaseDay = calendar.startOfDay(for: releaseDate)
+//        
+//        if let days = calendar.dateComponents([.day], from: today, to: releaseDay).day, days >= 0 {
+//            return "D-\(days)"
+//        }
+//        
+//        return nil
+//    }
+//}
 
 // 영화 카테고리 모델
 struct Category: Identifiable {
