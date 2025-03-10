@@ -8,8 +8,9 @@
 import SwiftUI
 
 struct MoviePosterImageView: View {
+    @Binding var testBinding : String
     var body: some View {
-        Image("testImage")
+        Image(testBinding)
             .resizable()
             .scaledToFill()
             .frame(width: 90, height: 135)
@@ -17,5 +18,6 @@ struct MoviePosterImageView: View {
 }
 
 #Preview {
-    MoviePosterImageView()
+    @Previewable @State var a: String = "testImage"
+    MoviePosterImageView(testBinding: $a)
 }

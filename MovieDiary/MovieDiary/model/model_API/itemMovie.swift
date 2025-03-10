@@ -21,7 +21,6 @@ struct ItemMovie: Identifiable, Codable {
         case isBookmarked = "IsBookmarked"
     }
     
-    // 날짜 변환 메서드 추가
     static func dateFromString(_ dateString: String) -> Date {
         let formats = ["yyyy-MM-dd", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd'T'HH:mm:ssZ"]
         let formatter = DateFormatter()
@@ -34,16 +33,12 @@ struct ItemMovie: Identifiable, Codable {
                 return date
             }
         }
-        
-        // 변환 실패 시 현재 날짜 반환
         return Date()
     }
-
-    // 기존 init(from decoder:) 메서드 유지
+    
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         
-        // ID 디코딩 (여러 형식 대응)
         if let id = try? container.decode(Int.self, forKey: .id) {
             self.id = id
         } else if let idString = try? container.decode(String.self, forKey: .id), let parsedId = Int(idString) {
@@ -52,11 +47,10 @@ struct ItemMovie: Identifiable, Codable {
             throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: [], debugDescription: "ID를 디코딩할 수 없습니다."))
         }
         
-        // 다른 필드들도 유사하게 유연하게 디코딩
+
         title = (try? container.decode(String.self, forKey: .title)) ?? ""
         posterPath = (try? container.decode(String.self, forKey: .posterPath)) ?? ""
         
-        // GenreIds 유연하게 디코딩
         if let genreIds = try? container.decode([String].self, forKey: .genreIds) {
             self.genreIds = genreIds
         } else if let genreIdsDict = try? container.decode([String: String].self, forKey: .genreIds) {
@@ -65,7 +59,6 @@ struct ItemMovie: Identifiable, Codable {
             self.genreIds = []
         }
         
-        // 날짜 디코딩 유연하게
         if let releaseDateString = try? container.decode(String.self, forKey: .releaseDate) {
             releaseDate = Self.dateFromString(releaseDateString)
         } else {

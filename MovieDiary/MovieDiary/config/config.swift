@@ -41,15 +41,15 @@ enum PaddingConfig {
     func value() -> CGFloat {
         switch self {
         case .sidePadding: return 16
-        case .heroSectionBottomPadding: return 25
+        case .heroSectionBottomPadding: return 10
         case .heroSectionHorizonSpacing: return 15
         case .heroSectionVerticalSpacing: return 10
         case .heroSectionTitle: return 24
         case .heroSectionSubTitle: return 18
         case .buttonFontSize: return 18
-        case .reviewTitle: return 15
-        case .reviewContent: return 13
-        case .detailFontSize: return 10
+        case .reviewTitle: return 16
+        case .reviewContent: return 15
+        case .detailFontSize: return 13
         }
     }
 }
@@ -58,12 +58,18 @@ enum ColorConfig {
     case heroSectionTitle
     case commonGrey
     case commonYello
+    case primaryColor
+    case effectColor
+    case secondColor
     
     func value() -> Color {
         switch self {
         case .heroSectionTitle: return Color(.white)
-        case .commonGrey: return Color(hex : "#8E8E8E")
+        case .commonGrey: return Color(hex : "#D9D9D9")
         case .commonYello: return Color(hex : "#FFF049")
+        case .effectColor: return Color(hex : "#A31D1D")
+        case .primaryColor: return Color(hex : "#FEF9E1")
+        case .secondColor: return Color(hex : "#E5D0AC")
         }
     }
 }

@@ -36,6 +36,9 @@ struct DiaryListView: View {
                     
                     CircularProfileImageView()
                 }
+                .onAppear() {
+                    
+                }
 
                 
                 // user content list view
