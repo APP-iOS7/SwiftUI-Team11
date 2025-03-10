@@ -23,6 +23,8 @@ struct posterItemDetailView: View {
     @State private var overview : String = ""
     @State private var backdropPath : String = ""
     
+    @Environment(\.dismiss) private var dismiss
+    
     
     
     
@@ -56,6 +58,21 @@ struct posterItemDetailView: View {
         .onAppear() {
             getMovieInfoForId()
         }
+        .navigationBarBackButtonHidden(true)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button(action: {
+                            dismiss()
+                        }) {
+                            HStack {
+                                Image(systemName: "chevron.left")
+                                Text("뒤로")
+                            }
+                            .foregroundStyle(.white)
+                            .fontWeight(.semibold)
+                        }
+                    }
+                }
     }
     
     func getMovieInfoForId() {
