@@ -73,6 +73,22 @@ func searchRequest(query: String, page: Int = 1) async -> [MovieResponse]? {
     }
 }
 
+func selectCondtion(kind: String, page: Int = 1) async -> [ItemMovie]? {
+    var url = API_URL + "/selectCondition?&page=\(page)"
+    if kind == "bookmark" {
+        url += "&kind=\(kind)"
+    } else if kind == "comment" {
+        url += "&kind=\(kind)"
+    }
+    if let request =  makeRequest(urlPath: url, method: "GET") {
+        let result = await sendRequset(request: request, data: Data())
+        return encodingSelectData(result)
+    }
+    else {
+        return nil
+    }
+}
+
 func updateRequest(model: String, id: Int, rate: Float = -1, isBookmarked: Bool? = nil , comment: String = "") async {
     var url = API_URL + "/update?model=\(model)&id=\(id)"
     if rate != -1 {
