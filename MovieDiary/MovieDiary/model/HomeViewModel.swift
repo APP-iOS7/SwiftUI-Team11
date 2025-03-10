@@ -28,10 +28,10 @@ struct MovieCategory: Identifiable {
     var movies: [ItemMovie] = []
 }
 
-class HomeViewModel: ObservableObject {
+// @preconcurrency 속성 추가
+@preconcurrency class HomeViewModel: ObservableObject {
     @Published var categories: [MovieCategory] = []
-    
-    @Published var isRefreshing = false
+    @Published var isDataLoading = false
     @Published var errorMessage: String?
     
     private let repository: MovieRepositoryProtocol
@@ -54,8 +54,10 @@ class HomeViewModel: ObservableObject {
     }
     
     func loadData(page: Int = 1) {
-        isRefreshing = true
-        errorMessage = nil
+        DispatchQueue.main.async {
+            self.isDataLoading = true
+            self.errorMessage = nil
+        }
         
         let publishers = categories.map { category in
             return fetchCategoryMovies(for: category.genre)
@@ -74,10 +76,10 @@ class HomeViewModel: ObservableObject {
                     print(detailedError)
                     self?.errorMessage = detailedError
                 }
-                self?.isRefreshing = false
+                self?.isDataLoading = false
             } receiveValue: { [weak self] moviesArray in
                 guard let self = self else { return }
-                for (index, movies) in moviesArray.enumerated() {
+                for (index, movies) in moviesArray.enumerated() where index < self.categories.count {
                     print("Loaded \(movies.count) movies for genre \(self.categories[index].genre)")
                     self.categories[index].movies = movies
                 }
@@ -88,16 +90,16 @@ class HomeViewModel: ObservableObject {
                 if totalMovies == 0 {
                     self.errorMessage = "장르별 영화 데이터를 불러오지 못했습니다. 서버 상태를 확인해주세요."
                 }
+                
+                self.isDataLoading = false
             }
             .store(in: &cancellables)
     }
     
     private func fetchCategoryMovies(for genre: MovieGenre) -> AnyPublisher<[ItemMovie], Error> {
-        // 장르 ID JSON 문자열로 생성 ["액션"] 같은 형식
         let encodedGenreIds = "[\"\(genre.genreId)\"]"
         print("요청 중인 장르: \(genre.rawValue), 인코딩된 ID: \(encodedGenreIds)")
         
-        // API 문서에 따라 URL 인코딩 필요
         guard let urlEncodedGenreIds = encodedGenreIds.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
             print("장르 ID 인코딩 실패")
             return Fail(error: NSError(domain: "EncodingError", code: -1, userInfo: nil)).eraseToAnyPublisher()
@@ -119,19 +121,30 @@ class HomeViewModel: ObservableObject {
     }
     
     func refresh() async {
-        await withCheckedContinuation { continuation in
-            for i in 0..<categories.count {
-                categories[i].movies = []
+        await withCheckedContinuation { [weak self] continuation in
+            guard let self = self else {
+                continuation.resume()
+                return
             }
-            loadData()
-            $isRefreshing
-                .dropFirst()
-                .filter { !$0 }
-                .first()
-                .sink { _ in
-                    continuation.resume()
+            
+            DispatchQueue.main.async {
+                self.isDataLoading = true
+                for i in 0..<self.categories.count {
+                    self.categories[i].movies = []
                 }
-                .store(in: &cancellables)
+                
+                self.loadData()
+                
+                self.$isDataLoading
+                    .dropFirst()
+                    .filter { !$0 }
+                    .first()
+                    .receive(on: DispatchQueue.main)
+                    .sink { _ in
+                        continuation.resume()
+                    }
+                    .store(in: &self.cancellables)
+            }
         }
     }
     
@@ -141,12 +154,14 @@ class HomeViewModel: ObservableObject {
         }
         
         return repository.searchMovies(query: query, page: 1)
+            .receive(on: DispatchQueue.main)
             .replaceError(with: [])
             .eraseToAnyPublisher()
     }
     
     func updateMovie(id: Int, rate: Double? = nil, isBookmarked: Bool? = nil, comment: String? = nil) -> AnyPublisher<Bool, Never> {
         repository.updateMovie(id: id, rate: rate, isBookmarked: isBookmarked, comment: comment)
+            .receive(on: DispatchQueue.main)
             .map { _ in true }
             .replaceError(with: false)
             .eraseToAnyPublisher()
