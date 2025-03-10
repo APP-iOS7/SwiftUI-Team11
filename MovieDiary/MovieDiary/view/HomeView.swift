@@ -95,7 +95,7 @@ struct MoviePosterView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
             ZStack(alignment: .topLeading) {
-                AsyncImage(url: movie.posterURL) { phase in
+                AsyncImage(url: URL(string: movie.posterPath)) { phase in
                     switch phase {
                     case .empty:
                         ZStack {
@@ -132,7 +132,7 @@ struct MoviePosterView: View {
                 }
                 
                 // D-Day 뱃지
-                if let daysUntilRelease = movie.daysUntilRelease {
+                if let daysUntilRelease = movie.releaseDate  {
                     Text(daysUntilRelease)
                         .font(.caption2)
                         .fontWeight(.bold)

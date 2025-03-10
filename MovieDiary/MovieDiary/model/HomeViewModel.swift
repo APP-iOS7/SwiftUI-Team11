@@ -16,14 +16,24 @@ enum MovieGenre: String, CaseIterable {
     case horror = "공포"
     case scienceFiction = "SF"
     
-    var genreId: Int {
+    var genreId: String {
         switch self {
-        case .action: return 28
-        case .comedy: return 35
-        case .crime: return 80
-        case .drama: return 18
-        case .horror: return 27
-        case .scienceFiction: return 878
+        case .action: return "%5B%22%EC%95%A1%EC%85%98%22%5D"
+        case .comedy: return "코미디"
+        case .crime: return aa()
+        case .drama: return "['액션']"
+        case .horror: return "27"
+        case .scienceFiction: return "878"
+        }
+    }
+    func aa() -> String {
+        let genres = ["액션"]
+        if let jsonData = try? JSONEncoder().encode(genres),
+           let jsonString = String(data: jsonData, encoding: .utf8) {
+            print(jsonString)
+            return jsonString
+        } else {
+            return ""
         }
     }
 }

@@ -68,7 +68,7 @@ protocol MovieAPIServiceProtocol {
     func searchMovies(query: String, page: Int) -> AnyPublisher<MovieResponse, APIError>
     func getMovieDetail(id: Int) -> AnyPublisher<MovieDetailResponse, APIError>
     func updateMovie(id: Int, rate: Double?, isBookmarked: Bool?, comment: String?) -> AnyPublisher<Void, APIError>
-    func getMoviesByGenre(genreId: Int, page: Int) -> AnyPublisher<MovieResponse, APIError>
+    func getMoviesByGenre(genreId: String, page: Int) -> AnyPublisher<MovieResponse, APIError>
 }
 
 enum MovieEndpoint {
@@ -92,11 +92,12 @@ enum MovieEndpoint {
 }
 
 class MovieDiaryAPIService: MovieAPIServiceProtocol {
+    
     private let baseURL: String
     private let urlSession: URLSession
     private let jsonDecoder: JSONDecoder
     
-    init(baseURL: String = "https://a692-49-246-51-78.ngrok-free.app", urlSession: URLSession = .shared, jsonDecoder: JSONDecoder = JSONDecoder()) {
+    init(baseURL: String = "https://6cff-49-246-51-78.ngrok-free.app", urlSession: URLSession = .shared, jsonDecoder: JSONDecoder = JSONDecoder()) {
         self.baseURL = baseURL
         
         let configuration = URLSessionConfiguration.default
@@ -228,7 +229,7 @@ class MovieDiaryAPIService: MovieAPIServiceProtocol {
             .eraseToAnyPublisher()
     }
     
-    func getMoviesByGenre(genreId: Int, page: Int = 1) -> AnyPublisher<MovieResponse, APIError> {
+    func getMoviesByGenre(genreId: String, page: Int = 1) -> AnyPublisher<MovieResponse, APIError> {
         let urlString = "\(baseURL)/select?model=item_movie&amp;page=\(page)&amp;genre_ids=[\"\(genreId)\"]"
         
         guard let url = URL(string: urlString) else {
