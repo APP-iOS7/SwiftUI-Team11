@@ -9,14 +9,26 @@ import SwiftUI
 
 struct SearchView: View {
     @State private var searchText = ""
-    
+    var item: ItemMovie // 실제 데이터 배열
+    @State private var movieData: [MovieCellData] = (0...10).map { index in
+        MovieCellData(
+            posterPath: "/sample\(index).jpg", // 테스트용 포스터 경로
+            title: "Movie Title \(index)", // 샘플 제목
+            releaseDate: Date() // 현재 날짜
+        )
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
-                LazyVStack() {
-                    ForEach(0 ... 10, id: \.self) { user in
+                LazyVStack {
+                    ForEach(movieData, id: \.id) { movie in // 각 MovieCellData를 순회
                         VStack {
-                            MovieCell()
+                            // MovieCell에 필요한 데이터를 전달
+                            MovieCell(
+                                item: item,
+                                posterPath: item.posterPath
+                            )
                             Divider()
                         }
                         .padding(5)
@@ -28,6 +40,9 @@ struct SearchView: View {
     }
 }
 
-#Preview {
-    SearchView()
+struct MovieCellData: Identifiable, Hashable {
+    var id = UUID() // 고유 식별자
+    var posterPath: String
+    var title: String
+    var releaseDate: Date
 }
