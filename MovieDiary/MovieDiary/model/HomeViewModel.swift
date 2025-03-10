@@ -17,24 +17,7 @@ enum MovieGenre: String, CaseIterable {
     case scienceFiction = "SF"
     
     var genreId: String {
-        switch self {
-        case .action: return "%5B%22%EC%95%A1%EC%85%98%22%5D"
-        case .comedy: return "코미디"
-        case .crime: return aa()
-        case .drama: return "['액션']"
-        case .horror: return "27"
-        case .scienceFiction: return "878"
-        }
-    }
-    func aa() -> String {
-        let genres = ["액션"]
-        if let jsonData = try? JSONEncoder().encode(genres),
-           let jsonString = String(data: jsonData, encoding: .utf8) {
-            print(jsonString)
-            return jsonString
-        } else {
-            return ""
-        }
+        return self.rawValue
     }
 }
 
@@ -42,7 +25,7 @@ struct MovieCategory: Identifiable {
     let id = UUID()
     let title: String
     let genre: MovieGenre
-    var movies: [Movie] = []
+    var movies: [ItemMovie] = []
 }
 
 class HomeViewModel: ObservableObject {
@@ -70,13 +53,13 @@ class HomeViewModel: ObservableObject {
         ]
     }
     
-    func loadData() {
+    func loadData(page: Int = 1) {
         isRefreshing = true
         errorMessage = nil
         
         let publishers = categories.map { category in
             return fetchCategoryMovies(for: category.genre)
-                .catch { error -> AnyPublisher<[Movie], Never> in
+                .catch { error -> AnyPublisher<[ItemMovie], Never> in
                     print("Error fetching movies for genre \(category.genre): \(error)")
                     return Just([]).eraseToAnyPublisher()
                 }
@@ -99,19 +82,39 @@ class HomeViewModel: ObservableObject {
                     self.categories[index].movies = movies
                 }
                 
-                // 모든 카테고리의 영화 수 출력
                 let totalMovies = self.categories.reduce(0) { $0 + $1.movies.count }
                 print("Total movies loaded across all categories: \(totalMovies)")
                 
                 if totalMovies == 0 {
-                    self.errorMessage = "영화 데이터를 불러오지 못했습니다. 네트워크 연결을 확인해주세요."
+                    self.errorMessage = "장르별 영화 데이터를 불러오지 못했습니다. 서버 상태를 확인해주세요."
                 }
             }
             .store(in: &cancellables)
     }
     
-    private func fetchCategoryMovies(for genre: MovieGenre) -> AnyPublisher<[Movie], Error> {
-        return repository.getMoviesByGenre(genreId: genre.genreId)
+    private func fetchCategoryMovies(for genre: MovieGenre) -> AnyPublisher<[ItemMovie], Error> {
+        // 장르 ID JSON 문자열로 생성 ["액션"] 같은 형식
+        let encodedGenreIds = "[\"\(genre.genreId)\"]"
+        print("요청 중인 장르: \(genre.rawValue), 인코딩된 ID: \(encodedGenreIds)")
+        
+        // API 문서에 따라 URL 인코딩 필요
+        guard let urlEncodedGenreIds = encodedGenreIds.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+            print("장르 ID 인코딩 실패")
+            return Fail(error: NSError(domain: "EncodingError", code: -1, userInfo: nil)).eraseToAnyPublisher()
+        }
+        
+        return repository.getMoviesByGenre(genreId: urlEncodedGenreIds)
+            .handleEvents(
+                receiveOutput: { movies in
+                    print("장르 \(genre.rawValue)에 대해 \(movies.count)개의 영화 로드됨")
+                },
+                receiveCompletion: { completion in
+                    if case .failure(let error) = completion {
+                        print("장르 \(genre.rawValue) 데이터 로드 실패: \(error)")
+                    }
+                }
+            )
+            .mapError { $0 as Error }
             .eraseToAnyPublisher()
     }
     
@@ -132,7 +135,7 @@ class HomeViewModel: ObservableObject {
         }
     }
     
-    func searchMovies(query: String) -> AnyPublisher<[Movie], Never> {
+    func searchMovies(query: String) -> AnyPublisher<[ItemMovie], Never> {
         guard !query.isEmpty else {
             return Just([]).eraseToAnyPublisher()
         }
