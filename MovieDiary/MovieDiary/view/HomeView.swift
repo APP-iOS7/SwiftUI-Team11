@@ -55,19 +55,28 @@ struct HomeView: View {
                 await viewModel.refresh()
             }
             .overlay(
-                Group {
+                VStack {
                     if viewModel.isRefreshing {
-                        VStack {
+                        HStack {
                             Spacer()
-                            HStack {
-                                Spacer()
-                                ProgressView("새로고침 중")
-                                Spacer()
-                            }
-                            .padding()
-                            .background(Color(.systemBackground).opacity(0.8))
-                            .cornerRadius(10)
-                            .shadow(radius: 3)
+                            ProgressView("새로고침 중")
+                            Spacer()
+                        }
+                        .padding()
+                        .background(Color(.systemBackground).opacity(0.8))
+                        .cornerRadius(10)
+                        .shadow(radius: 3)
+                    }
+                    
+                    if let errorMessage = viewModel.errorMessage {
+                        HStack {
+                            Spacer()
+                            Text(errorMessage)
+                                .foregroundColor(.red)
+                                .padding()
+                                .background(Color(.systemBackground).opacity(0.9))
+                                .cornerRadius(10)
+                                .shadow(radius: 3)
                             Spacer()
                         }
                     }
