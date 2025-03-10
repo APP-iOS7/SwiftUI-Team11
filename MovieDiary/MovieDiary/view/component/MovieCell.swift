@@ -8,8 +8,9 @@
 import SwiftUI
 
 struct MovieCell: View {
-    var item: ItemMovie
-    let posterPath: String
+    var movieInfo : ForMovieCell
+//    var item: ItemMovie
+//    let posterPath: String
 //    @Binding var posterPath: String // 부모 뷰에서 바인딩된 값
 //    let title: String // 영화 제목
 //    let releaseDate: Date // 개봉 날짜
@@ -17,16 +18,17 @@ struct MovieCell: View {
     var body: some View {
         HStack(spacing: 10) {
             // 영화 포스터
-            MoviePosterImageView(posterPath: item.posterPath)
+            MoviePosterImageView(posterPath: movieInfo.posterPath)
                 .frame(width: 90, height: 135)
 
             // 제목과 날짜
             VStack(alignment: .leading, spacing: 5) {
-                Text(item.title) // 영화 제목
+                Text(movieInfo.title) // 영화 제목
                     .fontWeight(.bold)
                     .font(.title3)
+                    .foregroundStyle(.black)
 
-                Text(formatDate(item.releaseDate)) // 개봉 날짜 포맷
+                Text(movieInfo.releaseDate) // 개봉 날짜 포맷
                     .font(.footnote)
                     .foregroundColor(.gray)
             }
