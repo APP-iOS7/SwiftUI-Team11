@@ -40,6 +40,9 @@ struct DiaryListView: View {
                     
                     CircularProfileImageView()
                 }
+                .onAppear() {
+                    
+                }
 
                 // 필터 선택 바
                 HStack {

@@ -73,15 +73,31 @@ func searchRequest(query: String, page: Int = 1) async -> [MovieResponse]? {
     }
 }
 
-func updateRequest(model: String, id: Int, rate: Float?, isBookmarked: Bool?, comment: String?) async {
-    var url = API_URL + "/update?model=\(model)"
-    if rate != nil {
+func selectCondtion(kind: String, page: Int = 1) async -> [ItemMovie]? {
+    var url = API_URL + "/selectCondition?&page=\(page)"
+    if kind == "bookmark" {
+        url += "&kind=\(kind)"
+    } else if kind == "comment" {
+        url += "&kind=\(kind)"
+    }
+    if let request =  makeRequest(urlPath: url, method: "GET") {
+        let result = await sendRequset(request: request, data: Data())
+        return encodingSelectData(result)
+    }
+    else {
+        return nil
+    }
+}
+
+func updateRequest(model: String, id: Int, rate: Float = -1, isBookmarked: Bool? = nil , comment: String = "") async {
+    var url = API_URL + "/update?model=\(model)&id=\(id)"
+    if rate != -1 {
         url += "&rate=\(String(describing: rate))"
     }
     if isBookmarked != nil {
-        url += "&is_bookmarked=\(String(describing: isBookmarked))"
+        url += "&is_bookmarked=\(String(describing: isBookmarked!))"
     }
-    if comment != nil {
+    if comment != "" {
         url += "&comment=\(String(describing: comment))"
     }
     if let request =  makeRequest(urlPath: url, method: "GET") {

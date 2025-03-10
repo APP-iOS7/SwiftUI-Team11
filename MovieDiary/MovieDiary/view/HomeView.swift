@@ -10,81 +10,131 @@ import Combine
 
 struct HomeView: View {
     @StateObject private var viewModel = HomeViewModel()
+    @State private var isRefreshing = false
+    @State private var rotationDegree: Double = 0
     
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    ForEach(viewModel.categories) { category in
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text(category.title)
-                                .font(.title2)
-                                .fontWeight(.bold)
-                                .padding(.leading)
-                            
-                            // 영화 목록이 비어있으면 로딩 표시
-                            if category.movies.isEmpty {
-                                HStack {
-                                    Spacer()
-                                    ProgressView()
-                                        .padding()
-                                    Spacer()
-                                }
-                            } else {
-                                // 가로 스크롤
-                                ScrollView(.horizontal, showsIndicators: false) {
-                                    HStack(spacing: 15) {
-                                        ForEach(category.movies) { movie in
-                                            // 영화 클릭 시 상세 페이지로
-                                            NavigationLink(destination: posterItemDetailView(movieId: movie.id)) {
-                                                MoviePosterView(movie: movie)
-                                            }
-                                        }
-                                    }
-                                    .padding(.horizontal)
-                                }
-                            }
-                        }
+            content
+                .navigationTitle(isRefreshing ? "" : "MovieDiary")
+                .navigationBarTitleDisplayMode(.large)
+                .refreshable {
+                    isRefreshing = true
+                    await viewModel.refresh()
+                    try? await Task.sleep(nanoseconds: 300_000_000)
+                    isRefreshing = false
+                }
+                .onAppear {
+                    if viewModel.categories.flatMap({ $0.movies }).isEmpty {
+                        viewModel.loadData()
                     }
                 }
-                .padding(.vertical)
+        }
+    }
+    
+    // 메인 콘텐츠를 별도의 계산 속성으로 분리
+    private var content: some View {
+        ZStack {
+            if shouldShowMainContent {
+                mainContentView
+            } else if viewModel.isDataLoading {
+                loadingView
+            } else {
+                errorView
             }
-            .navigationTitle("MovieDiary")
-            .navigationBarTitleDisplayMode(.large)
-            .refreshable {
-                await viewModel.refresh()
-            }
-            .overlay(
-                VStack {
-                    if viewModel.isRefreshing {
-                        HStack {
-                            Spacer()
-                            ProgressView("새로고침 중")
-                            Spacer()
-                        }
-                        .padding()
-                        .background(Color(.systemBackground).opacity(0.8))
-                        .cornerRadius(10)
-                        .shadow(radius: 3)
-                    }
-                    
-                    if let errorMessage = viewModel.errorMessage {
-                        HStack {
-                            Spacer()
-                            Text(errorMessage)
-                                .foregroundColor(.red)
-                                .padding()
-                                .background(Color(.systemBackground).opacity(0.9))
-                                .cornerRadius(10)
-                                .shadow(radius: 3)
-                            Spacer()
-                        }
+        }
+    }
+    
+    // 메인 콘텐츠 표시 여부 조건
+    private var shouldShowMainContent: Bool {
+        !viewModel.isDataLoading && !viewModel.categories.flatMap({ $0.movies }).isEmpty
+    }
+    
+    // 메인 콘텐츠 뷰
+    private var mainContentView: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                ForEach(viewModel.categories) { category in
+                    if !category.movies.isEmpty {
+                        categoryView(for: category)
                     }
                 }
-            )
-            .onAppear {
+            }
+            .padding(.vertical)
+        }
+    }
+    
+    // 각 카테고리별 뷰
+    private func categoryView(for category: MovieCategory) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(category.title)
+                .font(.title2)
+                .fontWeight(.bold)
+                .padding(.leading)
+            
+            // 가로 스크롤
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 15) {
+                    ForEach(category.movies) { movie in
+                        movieLink(for: movie)
+                    }
+                }
+                .padding(.horizontal)
+            }
+        }
+    }
+    
+    // 영화 링크 뷰
+    private func movieLink(for movie: ItemMovie) -> some View {
+        NavigationLink(destination: posterItemDetailView(movieId: movie.id)) {
+            MoviePosterView(movie: movie)
+        }
+    }
+    
+    // 로딩 뷰
+    private var loadingView: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "film")
+                .font(.system(size: 50))
+                .foregroundColor(.black)
+                .rotationEffect(.degrees(rotationDegree))
+            
+            Text("영화 데이터를 불러오는 중...")
+                .font(.headline)
+                .foregroundColor(.gray)
+        }
+    }
+    
+    // 에러 뷰
+    private var errorView: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 50))
+                .foregroundColor(.orange)
+            
+            Text("영화 데이터를 불러올 수 없습니다")
+                .font(.headline)
+            
+            if let errorMessage = viewModel.errorMessage {
+                Text(errorMessage)
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+            }
+            
+            Button(action: {
                 viewModel.loadData()
+            }) {
+                Text("다시 시도")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 10)
+                    .background(Color.blue)
+                    .cornerRadius(8)
             }
+            .padding(.top)
         }
     }
 }

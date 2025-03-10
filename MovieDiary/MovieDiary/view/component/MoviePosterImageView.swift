@@ -40,12 +40,11 @@ struct MoviePosterImageView: View {
     }
 }
 
-//#Preview {
-////    @Previewable @State var testPosterPath: String = "/9ViCYfZ0whpwtKbM2WJP5PfsG2x.jpg" // 상태 변수 선언
-////    MoviePosterImageView(posterPath: $testPosterPath) // Binding 전달
+// #Preview {
+// //    @Previewable @State var testPosterPath: String = "/9ViCYfZ0whpwtKbM2WJP5PfsG2x.jpg" // 상태 변수 선언
+// //    MoviePosterImageView(posterPath: $testPosterPath) // Binding 전달
 //    MoviePosterImageView(posterPath: .constant("https://image.tmdb.org/t/p/w500/7hThYJ0yBzclKviPxBt5UB94zNT.jpg"))
-//}
-
+// }
 
 
 

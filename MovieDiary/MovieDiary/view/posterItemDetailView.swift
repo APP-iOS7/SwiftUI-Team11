@@ -7,35 +7,104 @@
 import SwiftUI
 import UIKit
 
+
 struct posterItemDetailView: View {
     @State private var isBookmarked : Bool = false
+    @State private var movieInfo : SearchResults?
+    @State private var onSheet : Bool = false
+    
+    @State private var title : String = ""
+    @State private var releaseDate : String = ""
+    @State private var genre : String = ""
+    @State private var posterPath : String = ""
+    @State private var rate : Double = 0
+    @State private var comment : String = ""
+    
+    @State private var overview : String = ""
+    @State private var backdropPath : String = ""
+    
+    @Environment(\.dismiss) private var dismiss
+    
+    
+    
     
     var heroSectionHeight : CGFloat
     var moiveId : Int
-    var rating : Double
     
-    init(movieId: Int, rating: Double = 0, _ heroSectionHeight: CGFloat = 230) {
+    init(movieId: Int, _ heroSectionHeight: CGFloat = 230) {
         self.heroSectionHeight = heroSectionHeight
         self.moiveId = movieId
-        self.rating = rating
     }
     
     
     var body: some View {
         ScrollView {
             VStack {
-                HeroSection(frameHeight: heroSectionHeight)
+                HeroSection(frameHeight: heroSectionHeight,title: $title, releaseDate: $releaseDate, genre: $genre, posterPath: $posterPath, backdropPath: $backdropPath)
                 Spacer(minLength: 40)
-                ratingView()
+                ratingView(movieId: moiveId,rating: $rate)
                     .frame(height: 50)
                 Spacer(minLength: 30)
                 buttonView
                 Spacer(minLength: 34)
                 Divider()
+                CommtentView
+                Divider()
                 Spacer(minLength: 11)
-                detailView()
+                detailView(overview: $overview)
                 Spacer()
             }
+        }
+        .onAppear() {
+            getMovieInfoForId()
+        }
+        .navigationBarBackButtonHidden(true)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button(action: {
+                            dismiss()
+                        }) {
+                            HStack {
+                                Image(systemName: "chevron.left")
+                                Text("뒤로")
+                            }
+                            .foregroundStyle(.white)
+                            .fontWeight(.semibold)
+                        }
+                    }
+                }
+    }
+    
+    func getMovieInfoForId() {
+        Task {
+            movieInfo = await serchIDRequest(id: moiveId)
+            title = movieInfo?.movieDetails[0].title ?? ""
+            if let releaseDate = movieInfo?.movieDetails[0].releaseDate {
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "yyyy"
+                let formattedYear = dateFormatter.string(from: releaseDate)
+                self.releaseDate = formattedYear
+            }
+            
+            genre = movieInfo?.movieDetails[0].genreIds.joined(separator: ", ") ?? ""
+            comment = movieInfo?.movieDetails[0].comment ?? ""
+            posterPath = movieInfo?.movieDetails[0].posterPath ?? ""
+            rate = Double(movieInfo?.movieDetails[0].rate ?? 0.0)
+            isBookmarked = movieInfo?.movieDetails[0].isBookmarked ?? false
+            overview = movieInfo?.itemDetails[0].overview ?? ""
+            backdropPath = movieInfo?.itemDetails[0].backdropPath ?? ""
+        }
+    }
+    
+    var CommtentView : some View {
+        VStack {
+            HStack() {
+                Text("코멘트")
+                    .font(.system(size: 16, weight: .bold))
+                    .padding(.horizontal)
+                Spacer()
+            }
+            Text(comment)
         }
     }
     
@@ -43,7 +112,9 @@ struct posterItemDetailView: View {
         HStack(spacing: 47) {
             Button(
                 action: {
-                    bookmarkedButtonClicked()
+                    Task {
+                        await bookmarkedButtonClicked()
+                    }
                 },
                 label: {
                     HStack{
@@ -53,12 +124,12 @@ struct posterItemDetailView: View {
                     }
             })
             .frame(width: 140, height: 50)
-            .background(isBookmarked ? ColorConfig.commonYello.value() : ColorConfig.commonGrey.value())
+            .background(isBookmarked ? ColorConfig.primaryColor.value() : ColorConfig.commonGrey.value())
             .clipShape(RoundedRectangle(cornerRadius: 10))
             .foregroundStyle(.black)
             Button(
                 action: {
-//                    createCommentView()
+                    onSheet.toggle()
                 },
                 label: {
                     Text("코멘트")
@@ -69,20 +140,27 @@ struct posterItemDetailView: View {
             .background(ColorConfig.commonGrey.value())
             .clipShape(RoundedRectangle(cornerRadius: 10))
         }
+        .sheet(isPresented: $onSheet ) {
+            createCommentView(moiveId: moiveId, comment: $comment)
+        }
     }
     
-    func bookmarkedButtonClicked() {
+    func bookmarkedButtonClicked() async {
         isBookmarked.toggle()
+        print(moiveId)
+        await updateRequest(model: "item_movie", id: moiveId, isBookmarked: isBookmarked)
     }
 }
 
 struct HeroSection: View {
     //init value
     var frameHeight : CGFloat
+    @Binding var title : String
+    @Binding var releaseDate : String
+    @Binding var genre : String
+    @Binding var posterPath : String
+    @Binding var backdropPath : String
     
-    init(frameHeight : CGFloat) {
-        self.frameHeight = frameHeight
-    }
     
     @State private var imageWidth: CGFloat = 0
     @State private var initMinY : CGFloat = 0
@@ -96,12 +174,17 @@ struct HeroSection: View {
                 let minY = proxy.frame(in: .global).minY
                 let midX = proxy.frame(in: .global).midX
                 
-                Image("testImage")
-                    .resizable()
+                AsyncImage(url: URL(string: "https://image.tmdb.org/t/p/w500/\(backdropPath)")) { image in
+                        image.resizable()
+                    } placeholder: {
+                        ProgressView()
+                    }
                     .scaledToFill()
                     .frame(width: imageWidth, height: frameHeight + (minY > 0 ? minY : 0), alignment: .bottom)
                     .offset(x: -midX + imageWidth / 2, y: minY > 0 ? -minY : 0)
                     .opacity(imageOpacity)
+                    .brightness(-0.2)
+                    .colorMultiply(.gray)
                     .onChange(of: minY) { _, newValue in
                         if initMinY > newValue {
                             imageOpacity = circulateOpacity(initOffset: initMinY, initHeight: frameHeight, newValue: newValue)
@@ -113,20 +196,24 @@ struct HeroSection: View {
                     .onAppear {
                         imageWidth = proxy.size.width
                         initMinY = minY
+                        print("\(backdropPath) \(posterPath)")
                     }
             }
             VStack {
                 Spacer()
                 HStack(spacing: PaddingConfig.heroSectionHorizonSpacing.value()) {
-                    Image("testImage")
-                        .resizable()
+                    AsyncImage(url: URL(string: "https://image.tmdb.org/t/p/w500/\(posterPath)")) { image in
+                            image.resizable()
+                        } placeholder: {
+                            ProgressView()
+                        }
                         .scaledToFit()
                         .frame(width: 70, height: 105)
                     VStack(alignment: .leading ,spacing: PaddingConfig.heroSectionVerticalSpacing.value()) {
-                        Text("Movie Title")
+                        Text("\(title)")
                             .font(.system(size: PaddingConfig.heroSectionTitle.value(), weight: .bold))
                             .foregroundStyle(ColorConfig.heroSectionTitle.value())
-                        Text("year/kinds")
+                        Text("\(releaseDate)/\(genre)")
                             .font(.system(size: PaddingConfig.heroSectionSubTitle.value()))
                             .foregroundStyle(ColorConfig.commonGrey.value())
                     }
@@ -144,10 +231,12 @@ struct HeroSection: View {
         let imageOpacity : Double = newValue > 0 ? 1 - (totalHeight - (initHeight + newValue))/totalHeight : 1 - (totalHeight - (initHeight + newValue))/totalHeight
         return imageOpacity
     }
+    
 }
 
 struct ratingView: View {
-    @State private var rating: Double = 0.0
+    var movieId: Int
+    @Binding var rating: Double
     @State private var starView: makeStarView?
     @State private var isDoubleTapped: Bool = false
     
@@ -156,17 +245,18 @@ struct ratingView: View {
         if let starView = starView {
             starView
                 .onAppear {
-                    self.starView = makeStarView(rating : $rating, isDoubleTapped: $isDoubleTapped)
+                    self.starView = makeStarView(movieId: movieId,rating : $rating, isDoubleTapped: $isDoubleTapped)
                 }
         }
         else {
-            makeStarView(rating: $rating, isDoubleTapped: $isDoubleTapped)
+            makeStarView(movieId: movieId ,rating: $rating, isDoubleTapped: $isDoubleTapped)
         }
     }
 }
 
 struct makeStarView: View {
-    @Binding var rating : Double
+    var movieId: Int
+    @Binding var rating: Double
     @Binding var isDoubleTapped: Bool
     
     var body: some View {
@@ -179,12 +269,12 @@ struct makeStarView: View {
                             .foregroundStyle(.black)
                     }
                     else if (rating + 1.0) > Double(currentIterationCount)  && Double(currentIterationCount) >= rating  && rating != 0 {
-                        starView(systemName: "star.leadinghalf.filled", index : currentIterationCount)
+                        starView(systemName: "star.fill.left", index : currentIterationCount)
                             .foregroundStyle(.black)
                     }
                     else {
                         starView(systemName: "star", index : currentIterationCount)
-                            .foregroundStyle(ColorConfig.commonGrey.value())
+                            .foregroundStyle(.black)
                     }
                 }
                 Spacer()
@@ -214,6 +304,11 @@ struct makeStarView: View {
                         }
                         else {
                             rating = Double(result.quotient + 1)/2.0
+                        }
+                    }
+                    .onEnded() {_ in
+                        Task {
+                            await updateRequest(model: "item_movie", id: movieId, rate: Float(rating))
                         }
                     }
             )
@@ -247,18 +342,22 @@ struct makeStarView: View {
     
     func changeRating(_ newRating: Double) {
         rating = newRating
+        Task {
+            await updateRequest(model: "item_movie", id: movieId, rate: Float(rating))
+        }
     }
 }
 
 //정보 표시 수정 필요
 struct detailView: View {
+    @Binding var overview: String
+    
     @State private var lineLimit: Int? = 3
     @State private var isLineLimitUpper : Bool = false
     @State private var textWidth : CGFloat = 0
     
     let items = ["감독", "상영 시간", "연령 등급", "장르", "제작 국가", "제작 연도", "기타1", "기타2"]
     let maxVisibleItems : Int = 4
-    let dummyContents : String = "jdknsajacjkwkqjjkajcnjdzjfnjkqehrkqekfnkjsnfbhjzbjzgrb,jbjhzgbjbhffbjgbdfhjbgjdbjfnkjsnknfjensfkjnsjdnfnsjeejkgbsfbjjfdjknsfjnsjdknsajacjkwkqjjkajcnjdzjfnjkqehrkqekfnkjsnfbhjzbjzgrb,jbjhzgbjbhffbjgbdfhjbgjdbjfnkjsnknfjensfkjnsjdnfnsjeejkgbsfbjjfdjknsfjnsjdknsajacjkwkqjjkajcnjdzjfnjkqehrkqekfnkjsnfbhjzbjzgrb,jbjhzgbjbhffbjgbdfhjbgjdbjfnkjsnknfjensfkjnsjdnfnsjeejkgbsfbjjfdjknsfjnsjdknsajacjkwkqjjkajcnjdzjfnjkqehrkqekfnkjsnfbhjzbjzgrb,jbjhzgbjbhffbjgbdfhjbgjdbjfnkjsnknfjensfkjnsjdnfnsjeejkgbsfbjjfdjknsfjnsjdknsajacjkwkqjjkajcnjdzjfnjkqehrkqekfnkjsnfbhjzbjzgrb,jbjhzgbjbhffbjgbdfhjbgjdbjfnkjsnknfjensfkjnsjdnfnsjeejkgbsfbjjfdjknsfjnsjdknsajacjkwkqjjkajcnjdzjfnjkqehrkqekfnkjsnfbhjzbjzgrb,jbjhzgbjbhffbjgbdfhjbgjdbjfnkjsnknfjensfkjnsjdnfnsjeejkgbsfbjjfdjknsfjnsjdknsajacjkwkqjjkajcnjdzjfnjkqehrkqekfnkjsnfbhjzbjzgrb,jbjhzgbjbhffbjgbdfhjbgjdbjfnkjsnknfjensfkjnsjdnfnsjeejkgbsfbjjfdjknsfjnsjdknsajacjkwkqjjkajcnjdzjfnjkqehrkqekfnkjsnfbhjzbjzgrb,jbjhzgbjbhffbjgbdfhjbgjdbjfnkjsnknfjensfkjnsjdnfnsjeejkgbsfbjjfdjknsfjnsjdknsajacjkwkqjjkajcnjdzjfnjkqehrkqekfnkjsnfbhjzbjzgrb,jbjhzgbjbhffbjgbdfhjbgjdbjfnkjsnknfjensfkjnsjdnfnsjeejkgbsfbjjfdjknsfjnsjdknsajacjkwkqjjkajcnjdzjfnjkqehrkqekfnkjsnfbhjzbjzgrb,jbjhzgbjbhffbjgbdfhjbgjdbjfnkjsnknfjensfkjnsjdnfnsjeejkgbsfbjjfdjknsfjnsjdknsajacjkwkqjjkajcnjdzjfnjkqehrkqekfnkjsnfbhjzbjzgrb,jbjhzgbjbhffbjgbdfhjbgjdbjfnkjsnknfjensfkjnsjdnfnsjeejkgbsfbjjfdjknsfjnsjdknsajacjkwkqjjkajcnjdzjfnjkqehrkqekfnkjsnfbhjzbjzgrb,jbjhzgbjbhffbjgbdfhjbgjdbjfnkjsnknfjensfkjnsjdnfnsjeejkgbsfbjjfdjknsfjnsjdknsajacjkwkqjjkajcnjdzjfnjkqehrkqekfnkjsnfbhjzbjzgrb,jbjhzgbjbhffbjgbdfhjbgjdbjfnkjsnknfjensfkjnsjdnfnsjeejkgbsfbjjfdjknsfjnsjdknsajacjkwkqjjkajcnjdzjfnjkqehrkqekfnkjsnfbhjzbjzgrb,jbjhzgbjbhffbjgbdfhjbgjdbjfnkjsnknfjensfkjnsjdnfnsjeejkgbsfbjjfdjknsfjnsjdknsajacjkwkqjjkajcnjdzjfnjkqehrkqekfnkjsnfbhjzbjzgrb,jbjhzgbjbhffbjgbdfhjbgjdbjfnkjsnknfjensfkjnsjdnfnsjeejkgbsfbjjfdjknsfjnsjdknsajacjkwkqjjkajcnjdzjfnjkqehrkqekfnkjsnfbhjzbjzgrb,jbjhzgbjbhffbjgbdfhjbgjdbjfnkjsnknfjensfkjnsjdnfnsjeejkgbsfbjjfdjknsfjnsjdknsajacjkwkqjjkajcnjdzjfnjkqehrkqekfnkjsnfbhjzbjzgrb,jbjhzgbjbhffbjgbdfhjbgjdbjfnkjsnknfjensfkjnsjdnfnsjeejkgbsfbjjfdjknsfjnsjdknsajacjkwkqjjkajcnjdzjfnjkqehrkqekfnkjsnfbhjzbjzgrb,jbjhzgbjbhffbjgbdfhjbgjdbjfnkjsnknfjensfkjnsjdnfnsjeejkgbsfbjjfdjknsfjnsjdknsajacjkwkqjjkajcnjdzjfnjkqehrkqekfnkjsnfbhjzbjzgrb,jbjhzgbjbhffbjgbdfhjbgjdbjfnkjsnknfjensfkjnsjdnfnsjeejkgbsfbjjfdjknsfjnsjdknsajacjkwkqjjkajcnjdzjfnjkqehrkqekfnkjsnfbhjzbjzgrb,jbjhzgbjbhffbjgbdfhjbgjdbjfnkjsnknfjensfkjnsjdnfnsjeejkgbsfbjjfdjknsfjns"
     
     var body: some View {
         ScrollView {
@@ -266,10 +365,10 @@ struct detailView: View {
             VStack(alignment: .leading) {
                 GeometryReader { geometry in
                     Text("개요")
-                        .font(.system(size: 15, weight: .bold))
-                        .onAppear() {
+                        .font(.system(size: 16, weight: .bold))
+                        .onChange(of: overview) {
                             self.textWidth = geometry.frame(in: .local).width
-                            let lineValue : Double = getLineValue(text: dummyContents, font: UIFont.systemFont(ofSize: 13), width: textWidth)
+                            let lineValue : Double = getLineValue(text: overview, font: UIFont.systemFont(ofSize: 15), width: textWidth)
                             if lineValue > 3 {
                                 isLineLimitUpper = true
                             }
@@ -282,8 +381,8 @@ struct detailView: View {
                 Spacer(minLength: 11)
                 
                     ZStack(alignment: .bottomTrailing) {
-                        Text(dummyContents)
-                            .font(.system(size: 13))
+                        Text(overview)
+                            .font(.system(size: 15))
                             .lineLimit(lineLimit)
                         if isLineLimitUpper {
                             Button(action: {
@@ -332,5 +431,5 @@ struct detailView: View {
 
 
 #Preview {
-    posterItemDetailView(movieId: 100)
+    posterItemDetailView(movieId: 11)
 }
