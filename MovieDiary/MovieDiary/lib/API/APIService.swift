@@ -92,12 +92,11 @@ enum MovieEndpoint {
 }
 
 class MovieDiaryAPIService: MovieAPIServiceProtocol {
-    private let baseURL: String
+    private let baseURL: String  = API_URL
     private let urlSession: URLSession
     private let jsonDecoder: JSONDecoder
     
-    init(baseURL: String = "https://6cff-49-246-51-78.ngrok-free.app", urlSession: URLSession = .shared, jsonDecoder: JSONDecoder = JSONDecoder()) {
-        self.baseURL = baseURL
+    init(urlSession: URLSession = .shared, jsonDecoder: JSONDecoder = JSONDecoder()) {
         
         let configuration = URLSessionConfiguration.default
         configuration.timeoutIntervalForRequest = 30

@@ -39,7 +39,8 @@ struct HomeView: View {
                 mainContentView
             } else if viewModel.isDataLoading {
                 loadingView
-            } else {
+            }
+            else {
                 errorView
             }
         }
