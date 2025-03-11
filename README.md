@@ -49,12 +49,12 @@
 
 | View 이름 |  View   | 주요 기능 |
 | :-------: | :-----: | :-------: |
-|  인트로 시작 화면  | <img src="./introView.gif"> | 스토리보드를 사용한 런치스크린 구현, 홈 화면은 앱 이름과 장르별 그룹화 한 포스터로 구성 |
-|  홈 화면 | <img src="./homeViewMove.gif"> | 포스터 아이템을 클릭 시 디테일 화면으로 이동, 장르는 vertical scroll로 배치, 영화 이름 타이틀 밑에 평점 기능 추가 |
-|  영화 디테일 화면  |<img src="./posterDetailViewMove.gif"> | 작은 포스터 이미지, 배경에 영화 장면 포스터, 영화 이름, 장르와 같은 기본정보가 표시,평점은 터치나 슬라이드로 매길 수 있으며, 점수는 0.5단위로 매길 수 있으며 0.5부터 시작가능 |
-|  코멘트 작성 화면  | <img src="./commentViewMove.gif"> | 코멘트 버튼을 클릭시 코멘트를 작성 가능, 코멘트 수정도 가능|
-|  영화록 리스트 화면  | <img src="./movieListLookView.gif"> | 간단한 사용자의 정보를 보여주며,TabBar를 사용해 북마크한 목록과 평점남긴 목록 둘 다 확인 가능, apbar에서 클릭한 아이템에 따라 해당 정보를 리스트로 표현 |
-|  겁색 화면  | <img src="./searchViewMove.gif"> | 검색 창이 있으며 검색버튼을 클릭 후 API를 통해 검색, 검색 단어를 자동으로 추천해주는 기능으로 시간이 될 때 추가, Item 클릭시 영화 디테일 화면으로 이동함 |
+|  인트로 시작 화면  | ![Image](https://github.com/user-attachments/assets/42dcc7f9-c477-4b0b-acfa-981fc69912da) | 스토리보드를 사용한 런치스크린 구현, 홈 화면은 앱 이름과 장르별 그룹화 한 포스터로 구성 |
+|  홈 화면 | ![Image](https://github.com/user-attachments/assets/29ad9011-1cbe-4c2a-8c75-97d6f46c8e7b) | 포스터 아이템을 클릭 시 디테일 화면으로 이동, 장르는 vertical scroll로 배치, 영화 이름 타이틀 밑에 평점 기능 추가 |
+|  영화 디테일 화면  |![Image](https://github.com/user-attachments/assets/08d5db26-04ef-431c-9c65-755dc1b86dc1) | 작은 포스터 이미지, 배경에 영화 장면 포스터, 영화 이름, 장르와 같은 기본정보가 표시,평점은 터치나 슬라이드로 매길 수 있으며, 점수는 0.5단위로 매길 수 있으며 0.5부터 시작가능 |
+|  코멘트 작성 화면  | ![Image](https://github.com/user-attachments/assets/08d5db26-04ef-431c-9c65-755dc1b86dc1) | 코멘트 버튼을 클릭시 코멘트를 작성 가능, 코멘트 수정도 가능|
+|  영화록 리스트 화면  | ![Image](https://github.com/user-attachments/assets/be75b573-6628-4a5a-89bf-34d82fa526ae) | 간단한 사용자의 정보를 보여주며,TabBar를 사용해 북마크한 목록과 평점남긴 목록 둘 다 확인 가능, apbar에서 클릭한 아이템에 따라 해당 정보를 리스트로 표현 |
+|  겁색 화면  | ![Image](https://github.com/user-attachments/assets/4ae0a910-400a-44e6-894a-5e47d0181e43) | 검색 창이 있으며 검색버튼을 클릭 후 API를 통해 검색, 검색 단어를 자동으로 추천해주는 기능으로 시간이 될 때 추가, Item 클릭시 영화 디테일 화면으로 이동함 |
 
 
 ## 🗂️ Architecture
