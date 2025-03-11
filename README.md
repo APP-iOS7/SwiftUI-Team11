@@ -37,7 +37,7 @@
 
 |         Home View          |      Poster Item Detail View       |      Poster comment View      |      Diary List View       |         Search View          |
 | :------------------------: | :--------------------------------: | :---------------------------: | :------------------------: | :--------------------------: |
-| <img width="377" alt="Image" src="https://github.com/user-attachments/assets/a4462f56-d1f0-4711-aef3-1b09d4b97111" /> | <img width="379" alt="Image" src="https://github.com/user-attachments/assets/af7e9f3f-a099-4142-927d-9d7a92a52b68" /> | <img width="374" alt="Image" src="https://github.com/user-attachments/assets/b9bcb265-5383-4367-a263-9d664bdd4242" /> | <img width="376" alt="Image" src="https://github.com/user-attachments/assets/6d346783-fda1-44eb-9606-00fb5baaae33" /> | <img width="374" alt="Image" src="https://github.com/user-attachments/assets/0d3f47e5-e095-4275-b010-36b017fc7937" /> |
+| <img width="377" alt="Image" src="https://github.com/user-attachments/assets/a4462f56-d1f0-4711-aef3-1b09d4b97111" /> | <img width="379" alt="Image" src="https://github.com/user-attachments/assets/af7e9f3f-a099-4142-927d-9d7a92a52b68" /> | <img width="374" alt="Image" src="https://github.com/user-attachments/assets/70a95709-7848-425a-9a2e-2cc40cfab31f" /> | <img width="376" alt="Image" src="https://github.com/user-attachments/assets/6d346783-fda1-44eb-9606-00fb5baaae33" /> | <img width="374" alt="Image" src="https://github.com/user-attachments/assets/0d3f47e5-e095-4275-b010-36b017fc7937" /> |
 
 **피그마 첨부**
 <img width="3216" alt="Image" src="https://github.com/user-attachments/assets/77e6973c-4740-40fe-b4d0-acf60c8bcb30" />
