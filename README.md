@@ -43,7 +43,6 @@
 <img width="3216" alt="Image" src="https://github.com/user-attachments/assets/77e6973c-4740-40fe-b4d0-acf60c8bcb30" />
 
 
-## 📌 주요 기능
 
 ## 📌 주요 기능
 
@@ -83,7 +82,9 @@
     - 작업을 시작하기 전에 폴더명은 어떻게 할지, 어떻게 구상할지 미리 결정하고 작업한 적이 이번 프로젝트가 처음이라 인상 깊습니다. 이번 프로젝트로 통해 스스로 뭐가 부족한지 느꼈고 잘하는 사람과 같이 할 수 있어서 큰 영광이었습니다. 감사합니다.
 
 ### 💻 기술스택과 요구사항
-
+<img src="https://img.shields.io/badge/ios-000000?style=for-the-badge&logo=ios&logoColor=white">
+<img src="https://img.shields.io/badge/swift-F05138?style=for-the-badge&logo=swift&logoColor=white">
+<img src="https://img.shields.io/badge/xcode-147EFB?style=for-the-badge&logo=xcode&logoColor=white">
 - iOS 17.0+
 - Swift 6.0+
 - Xcode 16.0+
