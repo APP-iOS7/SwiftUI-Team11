@@ -119,6 +119,7 @@ struct posterItemDetailView: View {
                 label: {
                     HStack{
                         Image(systemName: isBookmarked ? "suit.heart.fill" : "plus")
+                            .foregroundStyle(isBookmarked ? ColorConfig.effectColor.value() : .black )
                         Text("보고 싶어요!")
                             .font(.system(size: 18, weight: .bold))
                     }
